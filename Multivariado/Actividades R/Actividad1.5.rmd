@@ -1,0 +1,107 @@
+---
+title: "Actividad1.5"
+author: "Cesar Vazquez"
+date: "2022-11-08"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+1.  Considere la matriz de datos siguiente: 
+
+```{r}
+b = matrix(c(1,1,1),ncol=3)
+b2 = matrix(c(1,2,-3),ncol=3)
+x = matrix(c(1,6,8,4,2,3,3,6,3),ncol=3)
+trans_X = t(x)
+y1 = b%*%trans_X
+y2 = b2%*%trans_X
+y1
+y2
+```
+
+```{r}
+x = matrix(c(1,6,8,4,2,3,3,6,3),ncol=3)
+A = matrix(c(1,1,1,1,2,-3),ncol=2)
+y = x%*%A
+y
+```
+
+a)  
+
+```{r}
+mean(y)
+covar = cov(y)
+covar
+lambda = eigen(covar)
+lambda$values
+lambda$vector
+det(covar)
+```
+
+b)  
+
+```{r}
+mean(x)
+covar = var(x)
+covar
+det(covar)
+```
+
+c)  Argumentar acerca si X es independiente, y si Y es independiente.
+
+La X es independiente dado que el determinante de la matriz de covarianzas y varianzas es 0, y Y es dependiente dado que el determinante es diferente a 0
+
+2.  Explore los resultados del siguiente código e dé una interpretación (se sugiere intersertarlo en un trozo de R en Rmarkdown para que dé varias ventanas de salida de resutados):
+
+```{r}
+library(MVN)
+x = rnorm(100, 10, 2)
+y = rnorm(100, 10, 2)
+datos = data.frame(x,y)
+mvn(datos, mvnTest = "mardia", multivariatePlot = "persp")
+```
+
+```{r}
+mvn(datos, mvnTest = "mardia", multivariatePlot = "contour")
+```
+
+```{r}
+mvn(datos, mvnTest = "mardia", multivariatePlot = "qq")
+```
+
+3.  Un periódico matutino enumera los siguientes precios de autos usados para un compacto extranjero con edad medida en años y precio en venta medido en miles de dólares. 
+
+##### a) Construya un diagrama de dispersión
+
+```{r}
+x1 = c(1, 2, 3, 3, 4, 5, 6, 8, 9, 11)
+x2 = c(18.95, 19.00, 17.95, 15.54, 14.00, 12.95, 8.94, 7.49, 6.00, 3.99) 
+plot(x1, x2, pch = 16, col = "red")
+```
+
+##### b) Inferir el signo de la covarianza muestral a partir del gráfico.
+
+Observador los datos, podemos inferir que la covarianza sera negativa.
+
+##### c) Calcular el cuadrado de las distancias estadísticas (Malhalanobis)
+
+```{r}
+df = data.frame(x1, x2) 
+names(df)
+vm = apply(df, 2, mean) 
+vm
+df_cov = cov(df) 
+df_cov
+dm = mahalanobis(df, vm, df_cov) 
+dm
+```
+
+##### d) Usando las anteriores distancias, determine la proporción de las observaciones que caen dentro del contorno de probabilidad estimado del 50% de una distribución normal bivariada.
+
+```{r}
+x = matrix(c(x1, x2), ncol = 2) 
+x
+sort(dm)
+qchisq(0.5, 2)
+```

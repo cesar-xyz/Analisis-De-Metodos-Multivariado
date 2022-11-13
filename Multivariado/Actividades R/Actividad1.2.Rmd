@@ -1,0 +1,49 @@
+---
+title: "Actividad 1.2"
+author: "César Guillermo Vázquez Alvarez - A01197857"
+date: '2022-11-01'
+output: html_document
+---
+
+## Leyendo los datos
+
+```{r}
+M = read.csv("mc-donalds-menu.csv")
+names(M)
+```
+
+### Reduciendo la matriz de datos a 5 variables numéricas
+
+```{r}
+M1 = M[,c(4,11,13,19,20)]
+x = data.frame(M1$Calories,M1$Sodium)
+```
+
+### Plot de calorías con sodio
+
+```{r}
+plot(M1$Calories,M1$Sodium,pch=20,col="blue",main = "Diagrama de dispersión Calories-Sodium",ylab = "Sodium",xlab = "Calories")
+points(mean(M1$Calories),mean((M1$Sodium)),pch=19,col="Red", cex = 1.2)
+text(x[,1],x[,2],1:nrow(x),cex = 0.9, col = "brown", pos = 3,offset = 0.1)
+```
+
+### Vector de medias
+
+```{r}
+m = apply(x, 2, mean)
+m
+covar = cov(x)
+covar
+# Otro metodo
+#m2 = c(mean(M1$Calories),mean(M1$Sodium))
+#m2
+#cov(M1$Calories,M1$Sodium)
+```
+
+### Distancia de mahalanobis
+
+```{r}
+G = mahalanobis(x,m,covar)
+G
+plot(G,pch = 19, col="blue",cex = 0.7)
+```

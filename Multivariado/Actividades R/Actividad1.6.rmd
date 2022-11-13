@@ -1,0 +1,143 @@
+---
+title: "Actividad1.6"
+output:
+  pdf_document: default
+  html_document: default
+date: "2022-11-10"
+---
+
+### Parte A
+
+De los siguientes datos:
+
+x1: 2.5, 0.5, 2.2, 1.9, 3.1, 2.3, 2, 1, 1.5, 1.1
+
+x2: 2.4, 0.7, 2.9, 2.2, 3.0, 2.7, 1.6, 1.1, 1.6, 0.9
+
+-   Obtenga una matriz de datos centrados en sus medias.
+
+```{r}
+x1 = c(2.5, 0.5, 2.2, 1.9, 3.1, 2.3, 2, 1, 1.5, 1.1)
+x2 = c(2.4, 0.7, 2.9, 2.2, 3.0, 2.7, 1.6, 1.1, 1.6, 0.9)
+M = data.frame(x1,x2)
+M1 = data.frame(c(rep(mean(x1), 10)),c(rep(mean(x2), 10)))
+M2 = M-M1
+M2
+```
+
+-   Obtenga la matriz de varianza-covarianza de la matriz de datos centrados
+
+```{r}
+mcov = cov(M2)
+mcov
+```
+
+-   Obtenga los valores propios y vectores propios de la matriz de varianza-covarianza de la matriz de datos centrados.
+
+```{r}
+Mvalues = eigen(mcov)$values
+Mvectors = eigen(mcov)$vectors
+Mvalues
+Mvectors
+```
+
+$Y_1 =$ `r round(Mvectors[1,1],2)`$X_1$ `r  round(Mvectors[1,2],2)` $X_2$
+
+$Y_2 =$ `r round(Mvectors[2,1],2)`$X_1$ + `r  round(Mvectors[2,2],2)` $X_2$
+
+-   Correlación entre $Y_1$, y $X_1$, $X_2$
+
+```{r}
+# Raiz cuadrada de lambda 1 * el primer eigen vector/varianza de 1,1 de los datos centrada
+sqrt(Mvalues[1])*Mvectors[1,1] / sqrt(mcov[1,1])
+sqrt(Mvalues[1])*Mvectors[2,1] / sqrt(mcov[2,2])
+```
+
+-   Correlación entre $Y_2$, y $X_1$, $X_2$
+
+```{r}
+# Raiz cuadrada de lambda 1 * el primer eigen vector/varianza de 1,1 de los datos centrada
+sqrt(Mvalues[2])*Mvectors[1,2] / sqrt(mcov[1,1])
+sqrt(Mvalues[2])*Mvectors[2,2] / sqrt(mcov[2,2])
+```
+
+-   Obtenga las matrices transpuestas de los vectores propios y la traspuesta de la matriz de datos centrados.
+
+```{r}
+tVec = t(Mvectors)
+tM2 = t(M2)
+tVec
+tM2
+```
+
+-   Multiplique la matriz transpuesta de los vectores propios con la transpuesta de la matriz de datos centrados.
+
+```{r}
+CP = tVec%*%tM2
+rownames(CP)= c("CP1", "CP2")
+CP = t(CP)
+CP
+```
+
+-   Comprobando el primer resultado:
+
+$Y_1$ = `r round(Mvectors[1,1],2)` $X_1$ + `r  round(Mvectors[2,1],2)` $X_2$
+
+```{r}
+Y1 = (Mvectors[1,1]*M2[1,1]) + (Mvectors[2,1]*M2[1,2]); Y1
+```
+
+-   Visualización
+```{r}
+CP2 = -CP
+plot(CP2,pch = 19,col = "red")
+text(CP2[,1],CP2[,2],1:nrow(CP2),cex = .5, pos = 3)
+```
+
+
+
+-   Interprete los resultados.
+
+### PARTE B
+
+Aplique a los mismos datos las fórmulas de R para Componentes principales e interpreta resultados.
+
+-   Use el comando:
+
+```{r}
+cpa <- prcomp(M, scale=FALSE)
+names(cpa)
+```
+
+-   Explora las opciones del comando:
+
+```{r}
+print("desviaciones estándar: ")
+cpa$sdev
+print("medias: ")
+print("center da el centroide (medias de cada variable) previa estandarización: ")
+cpa$center
+print("scale informa si la variable se estandarizó: ")
+cpa$scale
+print("Los coeficientes de la combinación lineal normalizada de componete")
+cpa$rotation
+print("Los datos por sustituidos en la combinación lineal de vectores propios:")
+cpa$x
+```
+
+-   Grafica:
+
+```{r}
+biplot(x = cpa, scale = 0, cex =0.6, col = c("red", "blue"))
+barplot(cpa$sdev^2, col =c( "red", "blue"))
+```
+
+Observando la gráfica podemos ver que ambas variables son independientes ya que sus vectores ortogonales y podriamos despreciar los componentes 2.
+
+-   Importancia de los componentes:
+
+```{r}
+summary(cpa)
+```
+
+

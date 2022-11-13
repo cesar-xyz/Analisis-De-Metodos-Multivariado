@@ -1,0 +1,116 @@
+---
+title: "Actividad2.0"
+author: "Cesar Vazquez"
+date: "2022-11-03"
+output:
+  html_document: default
+  word_document: default
+---
+
+### Lectura del dataframe del menu de mc-donalds
+
+```{r}
+M = read.csv("mc-donalds-menu.csv")
+names(M)
+```
+
+### 0.- Elije una categoría como variable dependiente y acota tu base de datos.
+
+### 1.- Determine dos variables como independientes y una como dependiente y realice los siguientes puntos:
+
+```{r}
+M = M[M[, "Category"] == "Breakfast",]
+M1 = M[,c(4,11,13)]
+x = data.frame(M1)
+x
+```
+
+#### a. La matriz de varianzas y covarianzas
+
+```{r}
+covar = cov(x)
+covar
+```
+
+#### b. La matriz de correlación
+
+```{r}
+corr = cor(x)
+corr
+```
+
+#### c. Compara las matrices de correlación de pearson, de spearman y de kendall y menciona tus observaciones.
+
+```{r}
+corrSpearman = cor(x,method = "spearman")
+corrSpearman
+```
+
+```{r}
+corrKendall = cor(x,method = "kendall")
+corrKendall
+```
+
+Vemos que las matrices de correlación y covarianza, tienen valores diferentes pero su signo son iguales, esto demuestra que en los tres métodos existe una correlación del mismo tipo (positiva).
+
+### 2.- Desarrolle métodos de mínimos cuadrados y desglose cada elemento visto en clase.
+
+```{r}
+fit <- lm(x$Cholesterol ~ x$Calories + x$Sodium)
+summary(fit)
+```
+
+```{r}
+# y gorrito
+df = x
+y = fit$coefficients[1]+fit$coefficients[2]*x$Cholesterol+fit$coefficients[3]*x$Sodium
+df["y"] = y
+```
+
+```{r}
+yprom = mean(y) 
+yprom
+```
+
+```{r}
+y1 = y - yprom 
+df["yi - ymedia"] = y1
+```
+
+```{r}
+scR = (y1)^2
+df["SCR"] = scR
+```
+
+```{r}
+y2 = df$Calories - y
+df["Yi - ^Yi"] = y2
+```
+
+```{r}
+sce = (y2)^2
+df["sce"] = sce
+```
+
+```{r}
+# Yi - Ymedia
+y3 = df$Calories - yprom
+df["Yi - Ymedia"] = y3
+```
+
+```{r}
+# sct
+sct = (y3)^2
+df["sct"] = sct
+```
+
+```{r}
+df
+```
+
+```{r}
+library(plot3D)
+scatter3D(x$Calories,x$Cholesterol,x$Sodium, pch = 19, cex = 1,colvar = NULL, col="red", 
+          theta = 20, phi = 10, bty="b",
+          xlab = "Calorias", ylab = "Colesterol", zlab = "Sodio", main="Diagrama de dispersión Calories-Colesterol-Sodio ")
+```

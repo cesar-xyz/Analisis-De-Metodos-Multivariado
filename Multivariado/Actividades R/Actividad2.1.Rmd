@@ -1,0 +1,97 @@
+---
+title: "Actividad2.1"
+author: "Cesar Vazquez"
+date: "2022-11-08"
+output: html_document
+---
+
+1.  Se ha obtenido una muestra de 15 vendedores de una Editorial para estimar el valor medio de las ventas por trabajador en la Empresa. La media y varianza de la muestra (en miles de euros) son 5 y 2, respectivamente.
+
+    -   Intervalo de confianza para la venta media por trabajador en la Editorial al **95 %**.
+
+    ```{r}
+    mean =5
+    ds = sqrt(2)
+    n = 15
+    alpha = 1-0.95
+    error = qt(alpha/2,df=n-1,lower.tail = F) * ds / sqrt(n)
+
+    lower = mean-error
+    upper = mean+error
+    cat("El rango es [",lower,",",upper,"]")
+    ```
+
+    -   Intervalo de confianza para la venta media por trabajador en la Editorial al **97.5%**.
+
+```{r}
+mean =5
+ds = sqrt(2)
+n = 15
+alpha = 1-0.975
+error = qt(alpha/2,df=n-1,lower.tail = F) * ds / sqrt(n)
+
+lower = mean-error
+upper = mean+error
+cat("El rango es [",lower,",",upper,"]")
+```
+
+1.  Se ha obtenido una muestra de 25 alumnos de una Facultad para estimar la calificación media de los expedientes de los alumnos en la Facultad. Se sabe por otros cursos que la desviación típica de las puntuaciones en dicha Facultad es de 3.56 puntos. La media de la muestra fue de 4.9.
+
+    -   Intervalo de confianza al 95 %.
+
+    ```{r}
+    mean = 4.9
+    ds = 3.56
+    n = 25
+    alpha = 1-0.95
+    error = qnorm(alpha/2) * ds / sqrt(n)
+
+    lower = mean+error
+    upper = mean-error
+    cat("El rango es [",lower,",",upper,"]")
+    ```
+
+    -   Intervalo de confianza al 97.5 %.
+
+    ```{r}
+    mean = 4.9
+    ds = 3.56
+    n = 25
+    alpha = 1-0.975
+    error = qnorm(alpha/2) * ds / sqrt(n)
+
+    lower = mean+error
+    upper = mean-error
+    cat("El rango es [",lower,",",upper,"]")
+    ```
+
+2.  El rendimiento promedio de un fondo mutuo es del 10,5% anual y la desviación estándar de los rendimientos anuales es 18%. Si los rendimientos son aproximadamente normales, ¿cuál es el intervalo de confianza del 95% para el rendimiento del fondo mutuo el próximo año?
+
+    ```{r}
+    n = 1
+    mean = 0.105
+    ds = 0.18
+    alpha = 1-0.95
+    error = qnorm(alpha/2) * ds / sqrt(n)
+
+    lower = mean+error
+    upper = mean-error
+    cat("El rango es [",lower,",",upper,"]")
+
+    ```
+
+3.  Utilizando datos de cartera, construya un intervalo de confianza del 95% para el rendimiento diario medio de la población sobre el Período de muestreo de 250 días, si la desviación estándar es 0.25 y la media 0.1. Utilice una distribución z.
+
+    ```{r}
+    n = 250
+    mean = 0.1
+    ds = 0.25
+    alpha = 1-0.95
+    error = qnorm(alpha/2) * ds / sqrt(n)
+
+    lower = mean+error
+    upper = mean-error
+    cat("El rango es [",lower,",",upper,"]")
+    ```
+
+La elección entre los estadísticos es la cantidad de datos con los cuales se contaban, si se tenia la desviación estándar de la población se utiliza z.

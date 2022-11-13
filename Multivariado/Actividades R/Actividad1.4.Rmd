@@ -1,0 +1,61 @@
+---
+title: "Actividad1.4"
+author: "Cesar Vazquez"
+date: "2022-11-07"
+output: html_document
+---
+
+## Pruebas de normalidad univariada
+
+Los datos: cars (datos por default en R)
+
+#### Primeras exploraciones
+
+```{r}
+boxplot(cars,horizontal = TRUE, col = 2:3)
+```
+
+```{r}
+par(mfrow = c(1,2))
+hist(cars$speed, col = 2,probability = TRUE, ylim=c(0,0.08),xlim = c(-5,40), main = "Velocidades en carros")
+media1 = mean(cars$speed)
+desv1 = sd(cars$speed)
+x = seq(media1-4*desv1,media1+4*desv1,0.1)
+y = dnorm(x,media1,desv1)
+lines(x,y,col="blue")
+hist(cars$dist, col = 3, main = "Distancias en carros")
+```
+
+#### QQPLOT de la normalidad de velocidades.
+
+```{r}
+qqnorm(cars$speed)
+qqline(cars$speed,col=2)
+```
+
+#### Pruebas de normalidad
+
+Ho: Los datos provienen de una población normal.
+
+H1: Los datos no provienen de una población normal.
+
+Regla de decisión: Si el valor p es menor que alfa, hay evidencia suficiente para rechazar Ho.
+
+alfa = nivel de significación (probabilidad tipo I (rechazar Ho cuando en realidad Ho es cierta)) = zona extrema declarada como zona de rechazo.
+
+```{r}
+shapiro.test(cars$speed)
+```
+
+**Conclusión**: Como el valor de p = 0.4576 \> alfa = 0.05, no se rechaza Ho, por tanto , decidimos que car\$speed proviene de una población normal.
+
+#### Prueba de normalidad  Anderson Darling
+
+Con las mismas variables que el histograma.
+
+```{r}
+library(nortest)
+ad.test(cars$speed)
+```
+
+Observandolos también que el valor p = 0.6927\>alfa = 0.05, no se rechaza Ho, por tanto, decimos que car\$speed proviene de una población normal.
