@@ -1,0 +1,61 @@
+---
+title: "Actividad2.3"
+output: html_document
+date: "2022-11-11"
+---
+
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+library(psych)
+library(GGally)
+library(ggplot2)
+library(gridExtra)
+library(lmtest)
+library(corrplot)
+library(car)
+```
+
+```{r message=FALSE, warning=FALSE}
+datos <- read.csv('olmos.csv')
+attach(datos)
+
+modelo <- lm(PesoTotal ~., data=datos)
+summary(modelo)
+
+step(object = modelo, direction = "both", trace=1)
+
+modelo.f <- lm(PesoTotal ~ Diametro + Altura + Pesodesvainado + Pesovisceras + Pesocorteza, data =datos)
+
+p1 <- ggplot(data = datos, aes(Diametro, modelo.f$residuals)) + geom_point() + geom_smooth(color = "blue") + geom_hline(yintercept = 0) + theme_bw()
+
+p2 <- ggplot(data = datos, aes(Altura, modelo.f$residuals)) + geom_point() + geom_smooth(color = "blue") + geom_hline(yintercept = 0) + theme_bw()
+```
+
+```{r}
+qqnorm(modelo.f$residuals)
+qqline(modelo.f$residuals)
+```
+
+### Test Shapiro
+
+No se rechaza $H_o$, es normal. p-value es \> 0.05
+
+```{r}
+# Test Sw
+shapiro.test(modelo.f$residuals)
+ggplot(data = datos, aes(modelo.f$fitted.values,modelo.f$residuals))+geom_point()+geom_smooth(color = "blue", se = FALSE)
+```
+
+### Test BP
+
+```{r}
+bptest(modelo.f)
+```
+
+### VIF
+
+VIF: Factor de inflación de varianza. vif \> 10 si es mayor de 10 existe una colinealidad
+
+```{r}
+vif(modelo.f)
+```
