@@ -7,24 +7,141 @@ output: html_document
 
 ```{r}
 M = read.csv("mc-donalds-menu.csv")
-names(M)
 M = M[M[, "Category"] == "Breakfast",]
+M <- M[,c(-1,-2,-3)]
 x = data.frame(M)
 x
 ```
 
-a)  Agrega gráficos de dispersión y boxplots de las variables
+```{r}
+data.frame(round(cor(x = x, method = "pearson"), 3))
+```
 
-b)  ¿Cuál es la ecuación de regresión que mejor explica la variable respuesta?
+## a) Agrega gráficos de dispersión y boxplots de las variables
 
-c)  ¿Cuál es la significancia del modelo?
+```{r}
+library(psych)
+multi.hist(x = x, dcol = c("blue", "red"), dlty = c("dotted", "solid"),
+           main = colnames(x),cex.main = 0.8)
+```
 
-d)  ¿Cuál es el coeficiente de determinación asociado al modelo?
+-   Boxplot individual.
 
-e)  ¿Cuál es el error estándar de la estimación?
+```{r}
+par(mfrow = c(3, 7))
+invisible(lapply(1:7, function(i) boxplot(x[, i], cex.main = 0.8, main = names(x[i]))))
+invisible(lapply(8:15, function(i) boxplot(x[, i], cex.main = 0.8, main = names(x[i]))))
+invisible(lapply(16:21, function(i) boxplot(x[, i], cex.main = 0.8, main = names(x[i]))))
+```
 
-f)  Realiza las pruebas de test de normalidad, homocedasticidad, etc. vistos en clase para esta base.
+-   Boxplot de todo el data frame.
 
-g)  Muestra gráficos QQ-Plot
+```{r}
+boxplot(x)
+```
 
-h)  Agrega gráficos que ilustren la comparativa entre valores ajustados y residuales de tu modelo. Identifica valores atípicos.
+```{r message=TRUE, warning=TRUE}
+rm = x[c("Sodium","Total.Fat","Carbohydrates","Protein","Cholesterol")]
+ggpairs(rm, lower = list(continuous = "smooth"),diag=list(continuous = "barDiag"), axisLabels = "none")
+```
+
+### Boxplots
+
+```{r}
+boxplot(rm, lower = list(continuous = "smooth"),diag=list(continuous = "barDiag"), axisLabels = "none")
+```
+
+### Normalización de los datos
+
+```{r}
+scale <- as.data.frame(scale(rm,center=T,scale=T))
+df <- scale[-c(83),] # eliminamos outlier
+df <- scale[0:182,] 
+test <- scale[183:257,]
+```
+
+### Boxplot
+
+```{r}
+boxplot(df, lower = list(continuous = "smooth"),diag=list(continuous = "barDiag"), axisLabels = "none")
+```
+
+## b) ¿Cuál es la ecuación de regresión que mejor explica la variable respuesta?
+
+```{r}
+modelo <- lm(df$Sodium~df$Total.Fat + df$Carbohydrates + df$Protein + df$Cholesterol)
+# Best
+st = step(object = modelo, direction = "both", trace = 2)
+st
+```
+
+```{r}
+st$coefficients[1]
+```
+
+La ecuación que describe mejor la variable respuesta es: sodium = `r st$coefficients[2]` Total.Fat + `r st$coefficients[3]` Protein `r st$coefficients[4]` Cholesterol `r st$coefficients[1]`
+
+## c) ¿Cuál es la significancia del modelo?
+
+```{r}
+confint(lm(Sodium~Total.Fat+ Protein + Cholesterol, data = df))
+```
+
+## d) ¿Cuál es el coeficiente de determinación asociado al modelo?
+
+$R^2$ = 0.907
+
+```{r}
+modelo2 <- lm(df$Sodium ~ df$Total.Fat + df$Protein + df$Cholesterol) 
+sum  = summary(modelo2)
+sum
+```
+
+## e) ¿Cuál es el error estándar de la estimación?
+
+```{r}
+sum$sigma
+```
+
+## f) Realiza las pruebas de test de normalidad, homocedasticidad, etc. vistos en clase para esta base.
+
+#### Normalidad
+
+No se rechaza $H_o$, es normal. p-value es \> 0.05
+
+```{r}
+# Test Sw
+shapiro.test(modelo2$coefficients)
+ggplot(data = x, aes(modelo2$fitted.values,modelo2$residuals))+geom_point()+geom_smooth(color = "blue", se = FALSE)
+```
+
+#### Homoestacidad
+
+```{r}
+bptest(modelo2)
+ggplot(data = x, aes(modelo2$fitted.values, modelo2$residuals)) + geom_point() +
+geom_smooth(color = "firebrick", se = F) +
+geom_hline(yintercept = 0) +
+theme_bw()
+```
+
+No se rechaza $H_0$, los valores presentan homoestacidad.
+
+#### Multicolinealidad
+
+```{r}
+vif(modelo2)
+```
+
+No existe un valor que influya en la multicolinealidad
+
+## g) Muestra gráficos QQ-Plot
+
+```{r}
+qqnorm(modelo2$residuals)
+qqline(modelo2$residuals)
+```
+
+## h) Agrega gráficos que ilustren la comparativa entre valores ajustados y residuales de tu modelo. Identifica valores atípicos.
+
+## i)
