@@ -2,7 +2,9 @@
 title: '2.2'
 author: "Cesar Vazquez"
 date: "2022-11-13"
-output: html_document
+output:
+  word_document: default
+  html_document: default
 ---
 
 ```{r}
@@ -40,9 +42,9 @@ invisible(lapply(16:21, function(i) boxplot(x[, i], cex.main = 0.8, main = names
 boxplot(x)
 ```
 
-```{r message=TRUE, warning=TRUE}
+```{r}
 rm = x[c("Sodium","Total.Fat","Carbohydrates","Protein","Cholesterol")]
-ggpairs(rm, lower = list(continuous = "smooth"),diag=list(continuous = "barDiag"), axisLabels = "none")
+#ggpairs(rm, lower = list(continuous = "smooth"),diag=list(continuous = "barDiag"), axisLabels = "none")
 ```
 
 ### Boxplots
