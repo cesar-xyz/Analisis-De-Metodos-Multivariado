@@ -133,7 +133,7 @@ No se rechaza $H_0$, los valores presentan homoestacidad.
 vif(modelo2)
 ```
 
-No existe un valor que influya en la multicolinealidad
+No existe un valor que influya en la colinealidad ya que el factor de inflación de varianza. vif \> 10 si es mayor de 10 existe una colinealidad.
 
 ## g) Muestra gráficos QQ-Plot
 
@@ -141,7 +141,3 @@ No existe un valor que influya en la multicolinealidad
 qqnorm(modelo2$residuals)
 qqline(modelo2$residuals)
 ```
-
-## h) Agrega gráficos que ilustren la comparativa entre valores ajustados y residuales de tu modelo. Identifica valores atípicos.
-
-## i)
