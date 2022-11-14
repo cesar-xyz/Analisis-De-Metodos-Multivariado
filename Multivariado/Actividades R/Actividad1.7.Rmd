@@ -1,0 +1,106 @@
+---
+title: "Actividad1.7"
+author: "Cesar Vazquez"
+date: "2022-11-14"
+output: html_document
+---
+
+### Dependencias utilizadas
+
+```{r}
+library(stats)
+library(factoextra)
+library(ggplot2)
+library(FactoMineR)
+```
+
+```{r}
+x = read.csv("paises_mundo.csv")
+names(x)
+```
+
+## Parte 1
+
+1.  Calcule las matrices de varianza-covarianza S con cov(X) y la matriz de correlaciones con cor(X)
+
+```{r}
+covarianza = cov(x)
+covarianza
+```
+
+```{r}
+correlacion = cor(x)
+correlacion
+```
+
+2.  Calcule los valores y vectores propios de cada matriz.La función en R es: eigen().
+
+```{r}
+eigen(covarianza)
+```
+
+```{r}
+eigen(correlacion)
+```
+
+3.  Calcule la proporción de varianza explicada por cada componente. Se sugiere dividir cada lambda entre la varianza total (las lambdas están en eigen(S)[1]). La varianza total es la suma de las varianzas de la diagonal de S. Una forma es sum(diag(S)). La varianza total de los componentes es la suma de los valores propios (es decir, la suma de la varianza de cada componente), sin embargo, si sumas la diagonal de S (es decir, la varianza de cada x), te da el mismo valor (¡comprúebalo!). Recuerda que las combinaciones lineales buscan reproducir la varianza de X.
+
+```{r}
+lambda = eigen(covarianza)[1]
+var_total = sum(diag(covarianza))
+xVar = lambda$values/var_total
+xVar
+```
+
+4.  Acumule los resultados anteriores. (cumsum() puede servirle).
+
+```{r}
+cumsum(xVar)
+```
+
+5.  Según los resultados anteriores, ¿qué componentes son los más importantes? ¿qué variables son las que más contribuyen a la primera y segunda componentes principales? ¿por qué lo dice? ¿influyen las unidades de las variables?
+
+-   Los componentes 1 y 2 son los de mayor importancia, por que explican el 99%.
+-   Los principales variables que contribuyen con la primer y segundos componentes, son PNB95 y ProdElec. Ya que son los que mayor influyen, por la magnitud de las unidades de sus variables.
+
+```{r}
+prcomp(x)
+```
+
+6.  Hacer los mismos pasos anteriores, pero con la matriz de correlaciones (se obtiene con cor(x) si x está compuesto por variables numéricas)
+
+```{r}
+lambda = eigen(correlacion)[1]
+var_total = sum(diag(correlacion))
+xVar = lambda$values/var_total
+xVar
+```
+
+```{r}
+cumsum(xVar)
+```
+
+7.  Compare los resultados de los incisos 6 y 5. ¿qué concluye? En conclusión la correlación crece de manera más acomulativa pero en los primeros dos componentes se tiene el 54%, a diferencia de las covarianzas que en los segundos componentes se tiene el 99%.
+
+## Parte 2
+
+Obtenga las gráficas de respectivas con S (matriz de varianzas-covarianzas) y con R (matriz de correlaciones) de las dos primeras componentes e interprete los resultados en término de agrupación de variables (puede ayudar "índice de riqueza", "índice de ruralidad").
+
+```{r warning=FALSE}
+resS=princomp(x)
+compS=as.matrix(x)%*%resS$loadings
+plot(compS[,1:2],type="p", main = "A.C.P a partir de S")
+text(compS[,1],compS[,2],1:nrow(compS), cex = 0.5, pos = 3, pch = 19, col = "red")
+biplot(resS, cex = 0.5)  
+```
+
+## Parte 3
+
+Explore los siguientes gráficos relativos al problema y Componentes Principales y dé una interpretación de cada gráfico.
+
+```{r}
+cp3 = PCA(x)
+fviz_pca_ind(cp3, col.ind = "blue", addEllipses = TRUE, repel = TRUE)
+fviz_screeplot(cp3)
+fviz_contrib(cp3, choice = c("var"))
+```
