@@ -1,0 +1,30 @@
+---
+title: '2.2'
+author: "Cesar Vazquez"
+date: "2022-11-13"
+output: html_document
+---
+
+```{r}
+M = read.csv("mc-donalds-menu.csv")
+names(M)
+M = M[M[, "Category"] == "Breakfast",]
+x = data.frame(M)
+x
+```
+
+a)  Agrega gráficos de dispersión y boxplots de las variables
+
+b)  ¿Cuál es la ecuación de regresión que mejor explica la variable respuesta?
+
+c)  ¿Cuál es la significancia del modelo?
+
+d)  ¿Cuál es el coeficiente de determinación asociado al modelo?
+
+e)  ¿Cuál es el error estándar de la estimación?
+
+f)  Realiza las pruebas de test de normalidad, homocedasticidad, etc. vistos en clase para esta base.
+
+g)  Muestra gráficos QQ-Plot
+
+h)  Agrega gráficos que ilustren la comparativa entre valores ajustados y residuales de tu modelo. Identifica valores atípicos.
