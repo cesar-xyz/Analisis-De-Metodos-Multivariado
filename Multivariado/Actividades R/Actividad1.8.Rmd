@@ -1,0 +1,82 @@
+---
+title: "Actividad1.8"
+author: "Cesar Vazquez"
+date: "2022-11-15"
+output: html_document
+---
+
+```{r}
+library(psych)   # Hay que instalar psych la primera vez que se usa
+library(polycor)
+library(ggcorrplot)
+library(GPArotation) 
+library(performance) 
+```
+
+```{r}
+M = read.csv("datoslago.csv")
+M
+```
+
+1.  Obtener la matriz de correlaciones y la matriz de valores p de significancia por pares. Interpreten los resultado en equipo.
+
+```{r}
+corr.test(M)  # M es la matriz de datos
+```
+
+2.  Hacer una gráfica de la matriz de correlaciones. Hacer un comentario entre todos los del equipo de la gráfica.
+
+```{r}
+mat_cor <- hetcor(M)$correlations #matriz de correlación policórica
+ggcorrplot(mat_cor,type="lower",hc.order = T)
+```
+
+3.  Aplicar una prueba de correlación conjunta a los datos para verficar si es aplicable el Análisis Factorial y concluir.
+
+```{r}
+check_sphericity_bartlett(M)  
+```
+
+4.  Otra prueba para, para comprobar si el análisis factorial es viable, y muy citada, es la prueba KMO. Aplíquela a estos datos, ¿contradice los resutados del inciso anterior?
+
+```{r}
+R = cor(M)
+K = KMO(R)
+cat("El valor del estadístico es: ", K$MSA)
+```
+
+5.  Si los datos pasaron la prueba de los puntos anteriores 3 y 4, hacer un análisis factorial usando el criterio de máxima verosimilitud y el de mínimo residuo
+
+```{r warning=FALSE}
+R = cor(M)
+modelo1 = fa(R, nfactors =2, rotate = "none", fm = "mle")   # de máxima verosimilitud
+modelo2 = fa(R, nfactors = 2, rotate = "none", fm = "minres") # Modelo de mínimo residuo
+M1_commd = sort(modelo1$communality,decreasing = T)
+M2_commd= sort(modelo2$communality,decreasing = T)
+cbind(M1_commd,M2_commd)
+```
+
+6.  Determine el número de factores adecuado según el criterio del gráfico de Cattell
+
+```{r warning=FALSE}
+R = cor(M)
+scree(R) # se grafican los valores propios de R, y del análisis Factorial
+```
+
+7.  Realicen los gráficos correspondientes a la rotación Varimax y quartimax de los datos e interpreten en equipo los resultados.
+
+```{r}
+R = cor(M)
+rot = c("none", "varimax", "quartimax")
+bi_mod = function(tipo){
+biplot.psych(fa(M,nfactors = 2,fm="mle",rotate = tipo),main = "",col=c(2,3,4),pch = c(21,18),group = M[,"Tamano"])  
+}
+sapply(rot,bi_mod)
+```
+
+8.  ¿Qué pueden concluir? ¿Resultó razonable para este caso el modelo de análisis factorial? Expliquen.
+
+```{r warning=FALSE}
+modelo_varimax = fa(R,nfactors = 2,rotate = "varimax", fa="minres")
+fa.diagram(modelo_varimax)
+```
