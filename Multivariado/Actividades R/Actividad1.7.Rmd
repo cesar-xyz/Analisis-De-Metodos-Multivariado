@@ -43,7 +43,9 @@ eigen(covarianza)
 eigen(correlacion)
 ```
 
-3.  Calcule la proporción de varianza explicada por cada componente. Se sugiere dividir cada lambda entre la varianza total (las lambdas están en eigen(S)[1]). La varianza total es la suma de las varianzas de la diagonal de S. Una forma es sum(diag(S)). La varianza total de los componentes es la suma de los valores propios (es decir, la suma de la varianza de cada componente), sin embargo, si sumas la diagonal de S (es decir, la varianza de cada x), te da el mismo valor (¡comprúebalo!). Recuerda que las combinaciones lineales buscan reproducir la varianza de X.
+3.  Calcule la proporción de varianza explicada por cada componente.
+
+Se sugiere dividir cada lambda entre la varianza total (las lambdas están en eigen(S)[1]). La varianza total es la suma de las varianzas de la diagonal de S. Una forma es sum(diag(S)). La varianza total de los componentes es la suma de los valores propios (es decir, la suma de la varianza de cada componente), sin embargo, si sumas la diagonal de S (es decir, la varianza de cada x), te da el mismo valor (¡comprúebalo!). Recuerda que las combinaciones lineales buscan reproducir la varianza de X.
 
 ```{r}
 lambda = eigen(covarianza)[1]
@@ -80,19 +82,25 @@ xVar
 cumsum(xVar)
 ```
 
-7.  Compare los resultados de los incisos 6 y 5. ¿qué concluye? En conclusión la correlación crece de manera más acomulativa pero en los primeros dos componentes se tiene el 54%, a diferencia de las covarianzas que en los segundos componentes se tiene el 99%.
+7.  Compare los resultados de los incisos 6 y 5. ¿qué concluye?
+
+En conclusión la correlación crece de manera más acomulativa pero en los primeros dos componentes se tiene el 54%, a diferencia de las covarianzas que en los segundos componentes se tiene el 99%. Ya que en la matriz de correlación es estandarizada. Entonces nos quedariamos con el segundo modelo por que los datos son más reales, pero el modelo esta muy distribuido entre los componentes, al parecer este modelo tampoco es bueno.
 
 ## Parte 2
 
 Obtenga las gráficas de respectivas con S (matriz de varianzas-covarianzas) y con R (matriz de correlaciones) de las dos primeras componentes e interprete los resultados en término de agrupación de variables (puede ayudar "índice de riqueza", "índice de ruralidad").
 
 ```{r warning=FALSE}
-resS=princomp(x)
+resS=princomp(x, cor=T)
 compS=as.matrix(x)%*%resS$loadings
 plot(compS[,1:2],type="p", main = "A.C.P a partir de S")
 text(compS[,1],compS[,2],1:nrow(compS), cex = 0.5, pos = 3, pch = 19, col = "red")
 biplot(resS, cex = 0.5)  
 ```
+
+-   A simplemente vista podemos observar que el componente 1 no tiene mayor varianza relativa contra el componente 2.
+
+-   No hay una contundencia del modelo para nuestras variables esto se comprueba utilizando la matriz de correlación donde no se ven variables significantes, y cuando no se utiliza la correlación podemos observar dos variables que son contundentes pero esto no es verdadero por que la magnitud de esas variables es muy grande.
 
 ## Parte 3
 
@@ -104,3 +112,5 @@ fviz_pca_ind(cp3, col.ind = "blue", addEllipses = TRUE, repel = TRUE)
 fviz_screeplot(cp3)
 fviz_contrib(cp3, choice = c("var"))
 ```
+
+-   Se observa que los componentes se distribuyen con normalidad y el modelo no es contundente.
