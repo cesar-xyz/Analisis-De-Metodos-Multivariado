@@ -2,11 +2,13 @@
 title: "Actividad1.8"
 author: "Cesar Vazquez"
 date: "2022-11-15"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 ```{r}
-library(psych)   # Hay que instalar psych la primera vez que se usa
+library(psych)
 library(polycor)
 library(ggcorrplot)
 library(GPArotation) 
@@ -24,6 +26,8 @@ M
 corr.test(M)  # M es la matriz de datos
 ```
 
+Apartir de los p-values del test de correlacióm, observamos que existen algunos pares con p-values \< 0.05, el cual es el nivel de significancia.
+
 2.  Hacer una gráfica de la matriz de correlaciones. Hacer un comentario entre todos los del equipo de la gráfica.
 
 ```{r}
@@ -31,11 +35,15 @@ mat_cor <- hetcor(M)$correlations #matriz de correlación policórica
 ggcorrplot(mat_cor,type="lower",hc.order = T)
 ```
 
+Se observa que la gran mayoria de las variables presentan un nivel bueno de correlación, pero esto se puede deber que existen variables que dependen de otras.
+
 3.  Aplicar una prueba de correlación conjunta a los datos para verficar si es aplicable el Análisis Factorial y concluir.
 
 ```{r}
 check_sphericity_bartlett(M)  
 ```
+
+La prueba de Barlett analiza la similitud de varianzas, obtenemos un p-value \< 0.001, el cual nos asegura que hay suficiente correlación para realizar un análisis factorial.
 
 4.  Otra prueba para, para comprobar si el análisis factorial es viable, y muy citada, es la prueba KMO. Aplíquela a estos datos, ¿contradice los resutados del inciso anterior?
 
@@ -56,12 +64,16 @@ M2_commd= sort(modelo2$communality,decreasing = T)
 cbind(M1_commd,M2_commd)
 ```
 
+Esta dentro del rango de "mediocre", entre 0.6 y 0.69. Esto no contradice perse los resultados anteriores, si bien es mediocre el análisis es viable, pero las condiciones no son las ideales.
+
 6.  Determine el número de factores adecuado según el criterio del gráfico de Cattell
 
 ```{r warning=FALSE}
 R = cor(M)
 scree(R) # se grafican los valores propios de R, y del análisis Factorial
 ```
+
+La variable oxigeno es la menos explicada, ya que el modelo solo puede reproducir el 28.35% (criterio de mínimo residuo) y el 20.71% (criterio de máxima verosimilitud), y la que es mayor explicada por el modelo es LnTamaño con 97.48% (criterio de mínimo residuo) y el 99.50% (criterio de máxima verosimilitud).
 
 7.  Realicen los gráficos correspondientes a la rotación Varimax y quartimax de los datos e interpreten en equipo los resultados.
 
@@ -74,9 +86,13 @@ biplot.psych(fa(M,nfactors = 2,fm="mle",rotate = tipo),main = "",col=c(2,3,4),pc
 sapply(rot,bi_mod)
 ```
 
+En el primer grafico observamos un análisis factorial sin ninguna rotación. Podemos ver que las variables LnTamaño y Tamaño tienen alta correlación; Proteinas y LnProteinas, ya que en ambos estan relacionados, así también Oxígeno y Temperatura apuntan a direcciones diferentes por lo que no existe una correlación. En este mismo gráfico no se observa una agrupación clara para realizar una clasificación. Sin embargo la rotación muestra una agrupación más clara. La dirección de los vectores, causa una dependencia de un factor del otro.
+
 8.  ¿Qué pueden concluir? ¿Resultó razonable para este caso el modelo de análisis factorial? Expliquen.
 
 ```{r warning=FALSE}
 modelo_varimax = fa(R,nfactors = 2,rotate = "varimax", fa="minres")
 fa.diagram(modelo_varimax)
 ```
+
+Igual que en el anterior la rotación ayuda en la interpretación de los resultados de agrupación: existen 2 grupos uno relacionado con Tamaño, LnTamaño, LnProteinas y Proteinas, y el otro de Temperatura y Oxígenos. Esto podria verse relacionado debido a que el ultimo grupo depende más de condiciones climaticas. Por lo tanto parece viable realizar un análisis.
