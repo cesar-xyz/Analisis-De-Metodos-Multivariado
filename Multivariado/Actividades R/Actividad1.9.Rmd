@@ -1,5 +1,5 @@
 ---
-title: "Actividad 1.9"
+title: "Actividad 1.10"
 author: "Cesar Vazquez"
 date: "2022-11-17"
 output: html_document
@@ -17,6 +17,21 @@ names(M)
 -   Suponiendo equisdistancia entre las opciones, nos arriesgamos a considerar las variables numéricas discretas.
 
 # Descripción
+
+```{r}
+```
+
+```{r}
+```
+
+```{r}
+```
+
+```{r}
+```
+
+```{r}
+```
 
 ```{r}
 apply(M, 2, summary) # 2 = operar por columna, función
@@ -104,3 +119,118 @@ KMO(cor(M))
 Como MSA \> 0.5, es aceptable un análisis de componentes principales o factorial.
 
 Proximamente: - Mardia test - QQplot
+
+```{r}
+vMedia = colMeans(M)
+S = cov(M)
+Dm = mahalanobis(M, vMedia, S)
+gl = ncol(M)
+# qchisq me das una area a la izquierda y te doy la x
+for(i in c(0.25, 0.5, 0.75)){
+  prop = sum(Dm < qchisq(i,gl))/length(Dm)
+  cat("Observado:",prop, "Esperado: ", i*100, "%\n")
+}
+```
+
+Comentario: No muy similares, pero son cercanos.
+
+```{r}
+library(MVN)
+mvn(data = M, mvnTest = "mardia")
+```
+
+Según la prueba de normalidad de Marbia no pasa la prueba de sesgo, pero si la de kurtosis. Los datos no se deistribuyen normal.
+
+```{r}
+mvn(data = M, mvnTest = "hz")
+```
+
+## QQPLOT
+
+```{r}
+test = mvn(data = M, multivariatePlot = "qq")
+
+```
+
+Comentario: se observan que las distancias de Mahalanobis mayores provocan sesgo positivo.
+
+## Análisis de componentes principales.
+
+Nota. No demanda normalidad
+
+```{r}
+S = cov(M)
+lye = eigen(S)
+VarTotal = sum(diag(S))
+#sum(lye$values)
+Prop_var_explicada = cumsum(lye$values/VarTotal)
+Prop_var_explicada
+par(mfrow = c(1,2))
+plot(1:6,lye$values,type = "o", lwd = 2, col = "blue", xlab = "CP", ylab = "valor propio",main =  "Valores propios")
+plot(1:6,Prop_var_explicada,type = "o", lwd = 2, col = "red", xlab = "CP", ylab = "Proporciónde varianza explicada",  main = "Proporción de varianza acumulada")
+abline(v = 2, lty = 3, col = "blue")
+abline(h = 0.85, lty = 3, col = "blue")
+```
+
+## Combinaciones lineales de los primeros componentes
+
+```{r}
+CP12 = data.frame(lye$vectors[, c(1,2)])
+CP12 = round(CP12,3)
+colnames(CP12) = c("CP1", "CP2")
+rownames(CP12) = c("V1", "V2", "V3", "V4", "V5", "V6")
+```
+
+Combinación lineal de CP1 y CP2: CP1 = 0.587V1 - 0.051V2 + 0.599V3 - 0.069V4 - 0.538V5 + 0.003V6 CP2 = -0.049V1 - 0.551V2 + 0.080V3 - 0.559V4 + 0.157V5 - 0.592V6
+
+```{r}
+puntuaciones =  t(t(lye$vectors)%*%t(M))
+head(puntuaciones,3)
+# Se seleccionan los componentes que afectan más a mis datos, ya que cubren el 85% de la varianza total.
+CP = puntuaciones[,1:2]
+head(CP, 8) # de 30
+```
+
+Se tratan de dos componentes ortogonales (por definición los componentes principales son).
+
+## Gráfica de CP1 y CP2
+
+```{r}
+# No se pudo poner los vectores.
+plot(CP, pch = 20, col = rainbow(1))
+a = 1000
+arrows(0, 0, a * lye$vectors[1,1], a*lye$vectors[1,2], code = 2)
+```
+
+### Con librerias
+
+prcomp: versión básica princomp: completa PCA: avanzada(está en FactoMineR)
+
+```{r}
+library(factoextra)
+cp = princomp(M, center = T, cor = T, scores = T); cp
+```
+
+```{r}
+biplot(x = cp, scale= 0, cex=0.6, col = c("blue","brown3"), arrow.len = 0.1, expand = 0.9)
+```
+
+### Grafico de Cattel
+
+```{r}
+library(psych)
+scree(cov(M), factors= F)
+```
+
+### PCA
+
+```{r}
+library(FactoMineR)
+ACP = PCA(M, graph = T)
+```
+
+## Análisis factorial
+
+### Con librerias
+
+Factor_analysis ---\> Simple, está en library(parameters) rotation: none, "varimax", quartimax, proma, oblimin, simplimax, cluster, ... n = número de factores fa ---\> avanzado está en library(psych) MFA ---\> avanzado está en library(FactoMineR)
