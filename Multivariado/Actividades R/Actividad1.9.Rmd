@@ -1,0 +1,106 @@
+---
+title: "Actividad 1.9"
+author: "Cesar Vazquez"
+date: "2022-11-17"
+output: html_document
+---
+
+```{r}
+M = read.csv("datos_dentrifico.csv")
+names(M)
+```
+
+-   Se trata de 30 observaciones con 6 variables.
+
+-   Se trata de variables categóricas ordinales.
+
+-   Suponiendo equisdistancia entre las opciones, nos arriesgamos a considerar las variables numéricas discretas.
+
+# Descripción
+
+```{r}
+apply(M, 2, summary) # 2 = operar por columna, función
+apply(M, 2, sd) # sd = desv estándar de muestra s
+n = nrow(M)
+cat("Num. de observaciones:", n)
+```
+
+\*Se puede decir que los datos podrian ser normales, ya que la media y la mediana son parecidos.
+
+\*\*Se observan posibles distribuciones semejantes y tal vez simétricas por la cercanía de la media y mediana, y similares valores de la desviación estándar.
+
+\*\* El tamaño de la muestra (núm. de obs.) es muy pequeño, es no eficiente.
+
+## Descripción gráfica
+
+```{r}
+plot(M, col = "purple")
+```
+
+Se notan algunas variables correlaciones como V1-V3, V2-V6,
+
+```{r}
+
+boxplot(M, horizontal = T, col = rainbow(6), main = "Datos del dentrifico", xlab = "Escala")
+```
+
+Se observa cierta simetría interna de las variables, excepto V5. Las medianas son similares en todos excepto en la V5.
+
+## Analisis correlacional (por pares)
+
+```{r}
+round(cor(M),3)
+```
+
+V1 se observa una alta correlación con V3 y V5, mientras que V2 se observa V4 y V6.
+
+$H_o: \rho_{i,j} = 0$ #rho significa correlación de población.
+
+$H_1: \rho_{i,j} \neq 0$\
+$\alpha = 0.05$\
+**Regla de decisión**: Si valor p \< alfa = 0.05, se rechaza $H_o$
+
+```{r message=F}
+library(Hmisc)
+correl = rcorr(as.matrix(M),type="spearman")
+correl
+```
+
+Hay correlación significativa ente:
+
+V1, V2, V3
+
+V2, V4, V6
+
+Gráfica de correlaciones.
+
+```{r}
+library(ggcorrplot)
+ggcorrplot(cor(M), type = "lower", hc.order = T)
+```
+
+Se observan al menos 2 grupos de variables correlacionadas por pares.
+
+## Correlación conjunta.
+
+$H_o$: Los datos provienen de una población de variables no correlacionadas en forma conjunta.
+
+$H_1$: no $H_o$
+
+```{r}
+library(performance)
+check_sphericity_bartlett(M)
+```
+
+Hay suficiente significancia.
+
+## Prueba KMO:
+
+```{r, message=F}
+library(psych)
+KMO(cor(M))
+```
+
+Como MSA \> 0.5, es aceptable un análisis de componentes principales o factorial.
+
+Proximamente: - Mardia test - QQplot
