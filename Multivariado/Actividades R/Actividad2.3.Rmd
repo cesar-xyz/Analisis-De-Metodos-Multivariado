@@ -1,0 +1,42 @@
+---
+title: "Actividad 2.3"
+author: "Cesar Vazquez"
+date: "2022-11-18"
+output: html_document
+---
+
+```{r}
+x1 = matrix(c(3,7,2,4,4,7), ncol=3); x1
+x2 = matrix(c(6,9,5,7,4,8), ncol=3); x2
+Ex1 = matrix(c(3,6))
+Ex2 = matrix(c(5,8))
+S = matrix(c(1,1,1,2), ncol = 2); S
+```
+
+#### Calcule la función discriminante lineal de Fisher.
+
+```{r}
+l = t(Ex1-Ex2) %*% solve(S)
+y1 = l %*% Ex1
+y2 = l %*% Ex2
+m = 0.5*(y1+y2)
+cat("m =",m)
+```
+
+$x_0 \in \pi_1$ if $y ≥ m$
+
+$x_0 \in \pi_2$ if $y < m$
+
+#### Defina una nueva observación $x_0$ (la que gustes) como población $\pi_1$ o $\pi_2$ población usando la regla de decisión de acuerdo a Fisher (bajo un criterio con umbral $m$)
+
+$$x_0 = [7,-2]$$
+
+```{r}
+y = l %*% c(7,-2)
+
+# Prueba π2
+y < m
+
+```
+
+$y < m$, entonces $x_0$ pertenece a $π_2$
