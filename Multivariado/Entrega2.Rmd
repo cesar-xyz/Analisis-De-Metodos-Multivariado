@@ -1,0 +1,343 @@
+---
+title: "Etapa 2 "
+date: "2022-11-15"
+output: pdf_document
+---
+
+##### *Pamela Cantú Rodríguez (A01285128)*
+
+##### *Emiliano Ferreira Guadarrama (A01654418)*
+
+##### *Daniel Isaac Núñez López (A01654137)*
+
+##### *Ana Sofía Ugalde Jiménez (A01702639)*
+
+##### *César Guillermo Vázquez Álvarez (A01197857)*
+
+## Lectura de los datos
+
+```{r setup, warning=FALSE, results='hide', message=FALSE}
+library(ggcorrplot)
+library(ggplot2)
+library(dplyr)
+library(Hmisc)
+library(reshape2)
+library(RColorBrewer)
+```
+
+```{r chdir, include=FALSE}
+setwd('D:/Desktop')
+```
+
+```{r load_data}
+met.orig = read.csv("meteorologia.csv")
+cont.orig = read.csv('contaminantes.csv')
+```
+
+### Transformación
+
+Primero acotamos los datos a la estación que utilizaremos y los parámetros que nos interesan.
+
+```{r acot}
+met = met.orig[c(2, 3, 6, 7)]
+cont = cont.orig[c(2, 3, 6, 7)]
+```
+
+Después hacemos la transformación descrita en la primer entrega
+
+```{r transformation}
+# utilizamos gsub para eliminar whitespaces, después convertimos la columna a factores
+met$parameter <- as.factor(gsub(' ', '', met$parameter))
+
+# para asegurar que los dataframes cuadren deben tener el mismo índice, aquí utilizaremos 
+# la fecha/hora que es el índice de nuestro dataframe final
+# Para lograr esto creamos un dataframe vacío con todas las horas en nuestro rango
+
+all.hours <- seq(as.POSIXlt(min(met$date)), as.POSIXlt(max(met$date)), 'hour')
+# resulta que por cuestiones de cambio de horario hay una hora 
+# repetida (2021-10-31 01:00:00) entonces es necesario quitarla
+all.hours <- all.hours[-2931]
+
+# creamos un dataframe con la columna que tiene todas las horas
+df <- data.frame(
+                date = as.character.Date(all.hours)
+               )
+# añadimos cada parámetro como una columna (y la columna de 
+# las banderas correpondientes) al dataframe
+for (param in levels(met$parameter)) {
+  
+  # filtramos según el parámetro y tomamos las columnas menos el parámetro
+  par <- met[met$parameter == param, -2]
+
+  # cambiamos los nombre NE y NE_b por los correspondientes para 
+  # el parámetro y sus banderas
+  colnames(par) <- c('date', param, paste0(param, '.f'))
+  
+  # añadimos las columnas al df
+  df <- left_join(df, par, by = 'date')
+}
+
+# cambiamos el índice del df a la hora y borramos esa columna
+rownames(df) <- df$date
+df$date <- NULL
+
+head(df)
+```
+
+```{r categorias}
+# juntamos todas las columnas de banderas y conseguimos los 
+# posibles valores para las banderas
+flags = unique(melt(df[seq(2, 14, 2)], id.vars = NULL, na.rm = T)$value)
+
+# convertimos todas las filas de banderas a factores con los mismos niveles
+df[seq(2,14, 2)] <- lapply(df[seq(2,14, 2)], factor, levels=flags)
+
+summary(df)
+```
+
+### Plotting
+
+```{r violin, warning=F}
+pal = brewer.pal(n = 6, name = "Dark2")
+
+ggplot(
+  data = melt(df[c(5, 7, 9, 11, 13)], rm.na = T, id.vars = NULL),
+  aes(
+    x = variable,
+    y = value,
+    fill = variable
+  )
+) + geom_violin() + geom_boxplot(
+  show.legend = F, fill =NA, alpha = 0.5, outlier.color = NA
+) + scale_y_continuous(
+  trans = 'log10'
+) + scale_fill_manual(
+  values = pal[-1]
+) + theme(
+  axis.title = element_blank()
+) + scale_x_discrete(limits =rev) + coord_flip() + labs( 
+  title = 'Violin y box plot de variables meteorológicas con escala logarítmica'
+) + theme(
+  axis.ticks.y = element_blank(),
+  axis.text.y = element_blank()
+)
+```
+
+```{r hist}
+ggplot(
+  data = melt(df[c(1, 5, 7, 9, 11, 13)], na.rm = T, id.vars = NULL),
+  aes(
+    x = value,
+    fill = variable
+    )
+      ) + geom_histogram(
+        position = 'identity',
+        alpha= 0.5,
+        bins = 100
+        
+        ) + scale_fill_manual(values = pal) + 
+  labs(
+    title = 'Histogramas de variables meteorologicas',
+    x = 'Valor',
+    y = 'Frecuencia'
+  )
+
+```
+
+```{r corrmet}
+corrs = Hmisc::rcorr(as.matrix((df[seq(1, 13, 2)])))
+
+corrs$r[is.na(corrs$r)] <- 0
+
+ggcorrplot(
+  corrs$r,
+  lab=T,
+  outline.color = 'black'
+) + labs(
+  title = 'Correlación entre variables meteorológicas'
+)
+```
+
+```{r freqflags1, include=FALSE}
+data = data.frame(table(melt(df[seq(2, 14, 2)], id.vars = NULL)))
+
+data = data[data$value != ' ', ]
+
+ggplot(
+  data = data,
+  aes(
+    fill = value,
+    y = Freq,
+    x = variable
+  )
+) + geom_bar(
+  position = 'dodge',
+  stat = 'identity'
+) + coord_cartesian(
+  ylim = c(0, 150)
+) + geom_text(
+  x = 4.2,
+  y = 140,
+  label = data$Freq[11],
+  col = '#AFA100'
+) + labs(
+  title = 'Frecuencia de Banderas',
+  x = 'Variable',
+  y = 'Frecuencia',
+  fill = 'flag'
+)
+```
+
+### Contaminantes
+
+```{r cont}
+cont$parameter <- as.factor(gsub(' ', '', cont$parameter))
+cont$NE_b <- as.factor(cont$NE_b)
+
+df2 <- data.frame(
+                date = as.character.Date(all.hours)
+               )
+
+for (param in levels(cont$parameter)) {
+  
+  par <- cont[cont$parameter == param, -2]
+
+  colnames(par) <- c('date', param, paste0(param, '.f'))
+  
+  df2 <- left_join(df2, par, by = 'date')
+}
+
+head(df2)
+```
+
+```{r join}
+# podemos corroborar que los dataframes ya están alineados
+# all(rownames(df) == df2$date)
+
+# añadimos los contaminantes al dataframe
+df <- cbind(df, df2[-1])
+head(df)
+```
+
+Summary de los contaminantes y sus banderas
+
+```{r sum}
+summary(df[15:26])
+```
+
+Ya que se completó la transformación de todas las variables el dataframe tiene dimensiones:
+
+```{r dim}
+dim(df)
+```
+
+```{r corrcont}
+corrs2 = Hmisc::rcorr(as.matrix((df[seq(15, 26, 2)])))
+
+ggcorrplot(
+  corrs2$r,
+  lab=T,
+  outline.color = 'black'
+) + labs(
+  title = 'Correlación entre contaminantes'
+)
+```
+
+```{r contgraphs, warning=FALSE}
+limits <- c(11, 95, 45, 75, 200, 210)
+names(limits) <- c('CO', 'O3', 'PM2.5', 'PM10', 'SO2', 'NO2')
+
+c.idx <- seq(15, 26, 2)
+df$date <- as.Date(rownames(df))
+
+for (x in names(df)[c.idx]){
+
+  data = df[c('date', x, paste0(x, '.f'))]
+  names(data) <- c('date', 'cont', 'flag')
+
+  data$cont[is.na(data$cont)] <- -1
+  
+  graph = ggplot(
+    data = data
+  ) + geom_point(
+    aes(
+      x = date,
+      y = cont,
+      col = flag,
+      shape = flag
+    ),
+    alpha = 0.6
+  ) + geom_hline(
+    yintercept = limits[x],
+    lwd = 1, 
+    linetype = 2,
+    col = 'red'
+  ) + annotate(
+    'text',
+    label = 'límite',
+    fontface = 1,
+    col = 'red',
+    x = df$date[5],
+    y = limits[x] * 0.97,
+    position = 'dodge',
+    size = 3.5
+  ) + scale_x_date(
+    date_breaks = "1 month",
+    date_labels =  "%b %Y"
+  ) + theme(
+    axis.text.x = element_text(
+      angle = 60, 
+      hjust = 1
+    )
+  ) + labs(
+    col = 'flags',
+    shape = 'flags',
+    x = 'Fecha',
+    y = x
+  )
+  
+  print(graph)
+}
+```
+
+```{r flagfreq, flag_freq}
+data = data.frame(table(melt(df[seq(2, 26, 2)], id.vars = NULL)))
+
+data = data[data$value != ' ', ]
+
+data$Freq = data$Freq + 1
+
+ggplot(
+  data = data,
+  aes(
+    fill = value,
+    y = Freq,
+    x = variable
+  )
+) + geom_col(
+  position = position_dodge(0.5)
+) + scale_y_log10(
+  breaks = c(1, 5, 10, 50, 100, 500, 1000, 5000)
+) + labs(
+  title = 'Frecuencia de Banderas',
+  x = 'Variable',
+  y = 'Frecuencia',
+  fill = 'flag'
+) + theme_bw()
+
+```
+
+```{r corrall}
+corrs3 = Hmisc::rcorr(as.matrix((df[seq(1, 26, 2)])))
+
+corrs3$r[is.na(corrs3$r)] <- 0
+
+ggcorrplot(
+  corrs3$r,
+  lab=T,
+  outline.color = 'black',
+  lab_size = 2
+) + labs(
+  title = 'Correlación entre contaminantes y variables meteoroglógicas'
+)
+```
