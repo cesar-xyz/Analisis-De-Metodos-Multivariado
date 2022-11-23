@@ -1,0 +1,40 @@
+---
+title: "Analisis de discriminante"
+author: "Cesar Vazquez"
+date: "2022-11-23"
+output: html_document
+---
+
+```{r}
+Capital <- c(3.5,4.7,2.5,7.8,4.5,2.3,6.5,8.1,1.5,3.2)
+Pasivos <- c(2.5,6.5,4.6,5.6,7.3,6.5,4.6,3.4,2.6,3.2)
+Grupo <- c(1,1,1,0,1,0,0,0,0,0)
+```
+
+```{r}
+datos <- data.frame(Capital, Pasivos, Grupo)
+datos$Grupo <- factor (datos$Grupo, levels = c(0,1), labels = c("Si", "No"))
+```
+
+```{r}
+str(datos)
+```
+
+```{r}
+prop.table(table(datos$Grupo))
+```
+
+```{r}
+head(datos)
+```
+
+### Clasificación de una variable y dos grupos.
+
+$x_1$ = Capital
+
+```{r}
+# Aplicar la media de por grupos en la variable capital
+tapply(datos$Capital, datos$Grupo, mean)
+c1 <- (4.9+3.8/2)
+datos$cp <- ifelse(datos$Capital < c1, 1, 0)
+```

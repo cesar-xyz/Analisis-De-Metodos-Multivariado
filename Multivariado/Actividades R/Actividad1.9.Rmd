@@ -159,6 +159,10 @@ Comentario: se observan que las distancias de Mahalanobis mayores provocan sesgo
 Nota. No demanda normalidad
 
 ```{r}
+medias = colMeans(M)
+unos = matrix(1, ncol = 1, nrow = 30)
+Medias = unos%*%t(medias)
+M = M - Medias
 S = cov(M)
 lye = eigen(S)
 VarTotal = sum(diag(S))
