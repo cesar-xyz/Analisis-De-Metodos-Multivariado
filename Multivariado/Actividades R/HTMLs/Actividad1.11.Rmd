@@ -1,0 +1,45 @@
+---
+title: "Actividad 1.11"
+author: "Cesar Vazquez"
+date: "2022-11-24"
+output: html_document
+---
+
+# Análisis de conglomerados
+
+**Problema 1**
+
+A partir de la siguiente tabla de distancias, hallar el dendrograma aplicando dos métodos jerárquicos con el método del promedio.
+
+```{r}
+library(ggplot2)
+library(factoextra)
+Mpre = matrix(c(0,1,5,8.5,7.2, 0,0, 4.5,7.8,6.7,0,0,0,3.6,2.2,0,0,0,0,2,0,0,0,0,0), ncol = 5)
+```
+
+```{r}
+M = Mpre + t(Mpre)
+M
+```
+
+2.  Apliquen las funciones as.dist, hclust y plot para explorar los dendrogramas (que se diferencian por las distancias en el eje Y)
+
+```{r}
+d = as.dist(M) 
+J = hclust(d, method = "average")
+plot(J, hang = -1, lwd = 2, col = "blue", main = "Dendrograma de conglomerados", sub = "objetos", xlab = "n",ylab = c("distancia"))
+```
+
+3.  Para interpretar sobre el número óptimo de clusters puede ayudar la función fviz_nbclust
+
+```{r}
+fviz_nbclust(M, FUNcluster = kmeans, method = "wss", k.max = 4)
+```
+
+4.  Hallar la matriz de ultra distancias (las distancias de los objetos según el dendograma)
+
+```{r}
+d_pre = matrix(c(0,1,6.616,6.616,6.616, 0,0,6.616,6.616,6.616, 0,0,0,2.9,2.9, 0,0,0,0,2, 0,0,0,0,0), ncol = 5) 
+d = d_pre + t(d_pre)
+d
+```
