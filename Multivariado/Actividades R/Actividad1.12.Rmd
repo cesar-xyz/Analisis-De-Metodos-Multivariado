@@ -1,0 +1,34 @@
+---
+title: "Análisis de conglomerados 1.12"
+author: "Cesar Vázquez Álvarez"
+date: "2022-11-28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=TRUE, warning=TRUE}
+library(cluster)
+library(factoextra)
+```
+
+```{r}
+M = read.csv("TLA2021.csv")
+names(M)
+M1 = M[, -1:-2]  # quitando las columnas de fecha y hora
+Mstand = scale(x = M1, center = TRUE, scale = TRUE)
+```
+
+```{r}
+M1f = data.frame(Mstand)  # Se convierte la matriz Mstand a un data.frame porque así lo requiere la función kmeans.
+km_clusters = kmeans(M1f, centers = 3)
+fviz_cluster(object = km_clusters, data = M1f, show.clust.cent = TRUE, ellipse.type = "convex", star.plot = FALSE, repel = TRUE)
+```
+
+```{r}
+M1f = data.frame(Mstand)  # Se convierte la matriz Mstand a un data.frame porque así lo requiere la función kmeans.
+km_clusters = kmeans(M1f, centers = 2)
+fviz_cluster(object = km_clusters, data = M1f, show.clust.cent = TRUE, ellipse.type = "norm", star.plot = FALSE, repel = TRUE)
+```
