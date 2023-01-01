@@ -1,0 +1,58 @@
+---
+title: "Actividad 1.1"
+author: "Cesar Vazquez"
+date: '2023-01-01'
+format:
+   pdf: 
+    output-file: "Actividad_1.1"
+    output-ext:  "pdf"
+jupyter: julia-1.8
+---
+
+### 1) Dadas las siguientes matrices:
+
+$$ A=\begin{bmatrix} 2 & 4 & -3 \\ 0 & -2 & 5 \\ 9 & 0 & 6 \end{bmatrix} $$
+
+$$ B=\begin{bmatrix} 8 & -7 & -3 \\ 6 & 9 & 5 \\ -2 & -5 & 1 \end{bmatrix} $$
+
+```{julia}
+using LinearAlgebra
+A = [2 4 -3;0 -2 5; 9 0 6];
+B = [8 -7 -3; 6 9 5; -2 -5 1];
+```
+
+**a)  A + B**
+```{julia}
+display(A+B)
+```
+
+**b)  4A +3B**
+```{julia}
+display((4*A)+(3*B))
+```
+
+**c)  A´**
+```{julia}
+display(transpose(A))
+```
+
+**d)  $A^{-1}$**
+```{julia}
+display(inv(A))
+```
+
+**e) El determinante de A y $A^{-1}$**
+```{julia}
+display(det(A))
+display(det(inv(A)))
+```
+
+**e) El determinante de B y $B^{-1}$**
+```{julia}
+display(det(B))
+display(det(inv(B)))
+```
+
+### 2) Dadas las siguientes matrices:
+
+Calcula el producto matricial CD
