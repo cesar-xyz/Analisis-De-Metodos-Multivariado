@@ -1,0 +1,388 @@
+---
+title: "Examen Argumentativo"
+author: "Cesar Vazquez - A01197857"
+date: "2022-12-01"
+output: html_document
+---
+
+## Problema 1
+
+Se afirma que la puntuación emitida por la Prueba de inteligencia IQ de Wechsler tiene una media de 100, con distribución normal. A una muestra aleatoria de 13 personas se les aplicó la prueba y se obtuvieron los siguientes resultados:
+
+101, 88, 126, 109, 118, 93, 144, 96, 93, 102, 102, 140, 117
+
+Haz una estimación por intervalo de la verdadera media de la puntuación de la prueba con un nivel de confianza del 91%. Escribe tu respuesta redondeada a 2 decimales. Separa la cota inferior de la superior con una coma y emite tu respuesta entre corchetes.
+
+```{r}
+mediaPersonas = c(101,88, 126, 109, 118, 93, 144, 96, 93, 102, 102, 140, 117)
+media = mean(mediaPersonas); 
+varianza = var(mediaPersonas);
+std = sqrt(varianza);
+```
+
+```{r}
+qnorm(pnorm(0.045), mean = media, sd = std)
+```
+
+```{r}
+qnorm(pnorm(1-0.045), mean = media, sd = std)
+```
+
+¿Es factible suponer que la media de la puntuación es correcta? No ¿Por qué? No esta dentro de los limites
+
+## Problema 2
+
+Los datos se refieren al consumo de combustible del ciclo urbano en millas por galón (mpg) y 8 atributos (variables) de los automóviles. Los datos son los siguientes
+
+V1. mpg:           millas por galón\
+V2. cilindros:     número de cilindros\
+V3. mileage:      número de millas recorridas\
+V4. horsepower:    caballos de fuerza\
+V5. weight:        peso en libras\
+V6. acceleration:  aceleración\
+V7. model_year   \
+V8. origin:        nacional, extranjero, desconocido\
+V9. car name:      marca, tipo
+
+1\. Lea los datos y asegúrese que estén limpios.
+
+```{r}
+library(ggplot2)
+M = read.csv("data2.1-3.csv")
+M
+```
+
+```{r}
+sum(is.na(M))
+nrow(M)
+```
+
+```{r}
+M = na.omit(M)
+nrow(M)
+sum(is.na(M))
+```
+
+Tiene 14 valores nulos, se eliminaron y queda un total de 392 muestras.
+
+2.  Reduzca la matriz de datos original a otra base sólo de variables numéricas.
+
+```{r}
+Num = M[,-9]
+```
+
+3\. Elija la variable V3 como variable dependiente, determine un modelo adecuado para el análisis y responda a las siguientes preguntas:
+
+```{r}
+y = M$V3
+modelo <- lm(M$V3~M$V1 + M$V2 + M$V4 + M$V5 + M$V6 + M$V7)
+```
+
+a)  Determine los coeficientes estimados de todas las variables de tu nueva base de datos construida. (La base que solo tiene variables numéricas)
+
+Observamos que V1, V6 y V7 tienen coeficiente negativo lo que significa que, considerando todas las demás variables constantes.
+
+```{r}
+summary(modelo)
+```
+
+b)  Utilice el criterio de Akaike para determinar la selección de predictores y búsqueda en ambas direcciones, forward y backward. Describa cuál es la ecuación del nuevo modelo que mejor explica la variable respuesta. ¿Qué puede decir de los p-value individuales?
+
+Se utilizó la función step para encontrar el mejor modelo con busqueda en ambas direcciones. Observando los valores de AIC, se busca el menor, dado a que se busca un modelo multivariado que cumple con esta clausula, las variables a considerar son V1, V6 y V7.
+
+```{r}
+step(object = modelo, direction = "both", trace =1)
+```
+
+c)  Describa los nuevos coeficientes estimados y el error estándar de cada variable después de aplicar el criterio de Akaike para la selección de predictores en la dirección de búsqueda que eligió.
+
+$V3 = -10.62V1 -9.71V6+4.67V7 +239.6723$
+
+```{r}
+modelo2 <- lm(M$V3~M$V1+M$V6+M$V7) 
+summary(modelo2)
+```
+
+d)  Muestre a través de gráficos, los residuales individuales de cada variable en el nuevo modelo. Interprételos.
+
+```{r}
+library(ggplot2)
+library(gridExtra)
+
+plot1 <- ggplot(data=M, aes(V1, modelo2$residuals))+ geom_point() + geom_smooth(color = "firebrick") + geom_hline(yintercept=0)+ theme_bw()
+plot2 <- ggplot(data=M, aes(V6, modelo2$residuals))+ geom_point() + geom_smooth(color = "firebrick") + geom_hline(yintercept=0)+ theme_bw()
+plot3 <- ggplot(data=M, aes(V7, modelo2$residuals))+ geom_point() + geom_smooth(color = "firebrick") + geom_hline(yintercept=0)+ theme_bw()
+# Se observa la linealidad de los predictores
+grid.arrange(plot1,plot2,plot3)
+```
+
+e)  Determine la prueba de hipótesis de normalidad en el modelo a través del criterio Shapiro. ¿Se rechaza la hipótesis nula? Justifique porque llegó a esa conclusión en la hipótesis:
+
+Con la Shapiro test obtenemos la normalidad, donde Ho como normalidad y H1 como un comportamiento no normal y se considera un intervalo de confianza del 95%. p-value \< 0.05: se rechaza la Ho.
+
+```{r}
+shapiro.test(modelo2$residuals)
+```
+
+f)  Agregue algún gráfico de la distribución de residuos del modelo obtenido en el inciso b) e interprete.
+
+```{r}
+qqnorm(modelo2$residuals)
+qqline(modelo2$residuals)
+```
+
+g)  Realice una prueba de hipótesis Breusch-Pagan. ¿Se rechaza la hipótesis nula? Justifique porque llegó a esa conclusión en la hipótesis
+
+Con la prueba Breusch-Pagan, nuestra Ho existe homocedasticidad y H1 que no se presenta, con un intervalo de confianza de 95%. Donde el p-value, 0.4102 \> 0.05, no se tienen pruebas suficientes para rechazar Ho
+
+```{r}
+library(lmtest)
+bptest(modelo2)
+```
+
+h)  ¿Existe multicolinealidad en el modelo? Defina porqué:
+
+No se muestra multicolinealidad ya que los valores calculados de vif son menores a 5 por el intervalo de confianza.
+
+```{r}
+library(car)
+vif(modelo2)
+```
+
+i)  Realice un ANOVA para el modelo e interprete correctamente los resultados. ¿Cuál es el error estándar residual que arroja? Opine al respecto y redondee a 3 dígitos después del punto decimal:
+
+No se puede realizar ANOVA ya que se rechazo Ho en shapiro, ya que se requiere una normalidad en los datos. Pero el summary nos dio el error estandar residual de 55.96.
+
+Incluya su código y sus cálculos anotando el número de pregunta e inciso al que está respondiendo (no es necesario añadir la redacción del problema) y agregue sus comentarios (si se le solicitan en algún inciso) después de su implementación.
+
+*Sugerencias:*
+
+*Defina las hipótesis nulas como el caso afirmativo de que si se cumple la condición que se pregunta.* Utilice un nivel de significancia del 5% para las pruebas de hipótesis.
+
+## Problema 3
+
+Los datos se refieren al consumo de combustible del ciclo urbano en millas por galón (mpg) y 8 atributos (variables) de los automóviles. Los datos son los siguientes:
+
+-   V1. mpg: millas por galón
+-   V2. cilindros: número de cilindros
+-   V3. mileage: número de millas recorridas
+-   V4. horsepower: caballos de fuerza
+-   V5. weight: peso en libras
+-   V6. acceleration: aceleración
+-   V7. model_year
+-   V8. origin: nacional, extranjero, desconocido
+-   V9. car name: marca, tipo
+
+1.  Lea los datos y asegúrese que estén limpios. Reduzca la matriz de datos original a otra base si es necesario.
+
+```{r}
+M2 = read.csv("data2.3.csv")
+M2
+```
+
+```{r}
+sum(is.na(M2))
+nrow(M2)
+```
+
+```{r}
+M2= na.omit(M2)
+nrow(M2)
+sum(is.na(M2))
+M2Num = M2[,-9]
+```
+
+Existen 8 valores nulos los cuales se eliminaron y nos queda 398 pruebas.
+
+2.  Elija la variable V8 como variable dependiente, determine a través de análisis discriminante el análisis y responda a las siguientes preguntas:
+
+<!-- -->
+
+a)  Realice la implementación del modelo que incluya en principio todas las variables de la base para determinar su variable dependiente.
+
+```{r}
+library(klaR)
+greedy.wilks(V8 ~., M2Num)
+```
+
+```{r}
+modelo3 <- lda(V8 ~ V2+V1+V7 , data = M)
+```
+
+b)  Obtenga los valores de la función discriminante utilizando el resultado de los coeficientes en el inciso a).
+
+```{r}
+modelo3$scaling
+```
+
+c)  Considere la función discriminante y los grupos. ¿Cuál es el valor del umbral (criterio de decisión)? Redondee a dos dígitos después del punto decimal:
+
+```{r}
+
+```
+
+d)  Genere la variable "clase.pred" con el criterio condicional de si los valores de la función discriminante están por encima del valor del inciso c) pertenecen al grupo 1. ¿Cual es la tasa de error del modelo considerando esta clase predicha? Considere los primeros 3 dígitos después del punto decimal:
+
+e)  Genere las predicciones del modelo y obtenga las probabilidades a posteriori de los grupos.
+
+```{r}
+predicciones = predict(modelo3)
+predicciones$posterior
+```
+
+f)  Utilice nuevamente su modelo final considerando costos distintos de cero para los grupos (determine los que considere adecuados para el ejercicio). Muestre los resultados y matriz de confusión.
+
+g)  ¿Se logró segmentar? ¿Es buen discriminante para su predicción?
+
+## Problema 4
+
+Los siguientes datos corresponden a la contaminación del aire de la ciudad de los Ángeles en diferentes días con las siguientes variables:
+
+-   X1 = Wind
+-   X2 = Solar radiation
+-   X3 = CO
+-   X4 = NO
+-   X5 = NO2
+-   X6 = O3
+-   X7 = HC (hydrocarbons combustion)
+
+1.  Realice un análisis de normalidad de las variables continuas para identificar variables normales por pares y por distribución conjunta (se sugiere utilizar la prueba normalidad de Mardia y con prueba de Anderson Darling). Identifique las variables que resultaron leptocúrticas, platicúrticas y mesocúrticas.
+
+Según la prueba de normalidad de Marbia no pasa la prueba de sesgo, pero si la de kurtosis. Los datos no se deistribuyen normal.
+
+```{r}
+library(moments)
+pro4 = read.csv("airpollution.csv")
+library(MVN)
+mvn(data = pro4, mvnTest = "mardia")
+```
+
+```{r}
+kurtosis(pro4)
+```
+
+Todas las variables son leptocúrticas
+
+2.  Con el total de datos calcula la distancia de Mahalanobis de cada observación al centroide (vector de medias) con respecto a la matriz de covarianzas. ¿Qué observación está más alejada, según la distancia de Mahalanobis, del centroide? ¿Qué observación está más cercana?
+
+```{r}
+vMedia4 = colMeans(pro4)
+S4 = cov(pro4)
+Dm = mahalanobis(pro4, vMedia4, S4)
+gl = ncol(pro4)
+for(i in c(0.25, 0.5, 0.75)){
+  prop = sum(Dm < qchisq(i,gl))/length(Dm)
+  cat("Observado:",prop, "Esperado: ", i*100, "%\n")
+}
+```
+
+No muy similares, pero son cercanos.
+
+3.  Interprete los resultados de su análisis.
+
+```{r}
+test4 = mvn(data = pro4, multivariatePlot = "qq")
+```
+
+se observan que las distancias de Mahalanobis mayores provocan sesgo nega
+
+## Problema 5
+
+Los siguientes datos corresponden a la contaminación del aire de la ciudad de los Ángeles en diferentes días con las siguientes variables:
+
+-   X1 = Wind
+-   X2 = Solar radiation
+-   X3 = CO
+-   X4 = NO
+-   X5 = NO2
+-   X6 = O3
+-   X7 = HC (hydrocarbons combustion)
+
+A.  Aplicar al total de datos un análisis de componentes principales y con base en al menos tres criterios (por ejemplo, porcentaje de variación acumulada, gráfica de Scree y los valores de las cargas) determinar cuántos componentes son suficientes para explicar razonablemente la mayoría de la variación.
+
+```{r}
+
+```
+
+B. Escribir las combinaciones lineales de los Componentes principales en función de las variables y cargas obtenidas de los componentes principales resultantes.
+
+```{r}
+
+```
+
+C.  Utilizando los dos primeros componentes hacer una gráfica de dispersión de las puntuaciones. Comentar el gráfico en función de la variabilidad.
+
+```{r}
+
+```
+
+D. Hacer un gráfico vectorial de las variables e interpretar sus relaciones.
+
+```{r}
+
+```
+
+E. Interprete los resultados de su análisis.
+
+```{r}
+
+```
+
+## Problema 6
+
+A continuación se muestran los records de mujeres en pruebas de velocidad corriendo de varios países.
+
+COUNTRY = país
+
+-   X1 = segundos en carrera de 100 metros
+-   X2 = segundos en carrera de 200 metros
+-   X3 = segundos en carrera de 400 metros
+-   X4 = minutos en carrera de 800 metros
+-   X5 = minutos en carrera de 1500 metros
+-   X6 = minutos en carrera de 3000 metros
+-   X7 = minutos en carrera de maratón
+
+**A.** Justifique por qué es adecuado el uso del Análisis factorial (hacer la prueba de esfericidad de Bartlett y KMO).
+
+**B.** Justifique el número de factores principales que se utilizarán en el modelo.
+
+**C.** dentifique las comunalidades de los factores del modelo propuesto, y los errores: interprete si se necesita un nuevo factor.
+
+**D.** Encuentre con ayuda de un gráfico de variables qué conviene más sin rotación o con rotación varimax. (se puede ayudar con la función **fa** de la librería psych y el gráfico de la función **fa.diagram**)
+
+**E**. Interprete los resultados de su análisis.
+
+## Problema 7
+
+A continuación se muestra las distancias por avión entre las siguientes ciudades:
+
+|      |      |     |      |     |     |
+|------|------|-----|------|-----|-----|
+| 0    |      |     |      |     |     |
+| 1068 | 0    |     |      |     |     |
+| 461  | 867  | 0   |      |     |     |
+| 549  | 769  | 107 | 0    |     |     |
+| 805  | 1819 | 943 | 1050 | 0   |     |
+| 508  | 941  | 108 | 172  | 882 | 0   |
+
+**A.** Hallar la matriz de ultra-distancias (dendrogram-dist) con el método de aglomeración jerárquica: (1) distancia mínima para nuevo grupo (2) distancia promedio entre individuos. Construir el dendrograma respectivo.
+
+```{r}
+library(factoextra)
+Mpre7 = matrix(c(0,1068,606,461,805,508,0,0,867,769,1819,941,0,0,0,107,943,108,0,0,0,0, 1050,172,0,0,0,0,0,882,0,0,0,0,0,0), ncol = 6)
+M7 = Mpre7 + t(Mpre7); M7
+```
+
+```{r}
+d7 = as.dist(M7) 
+J = hclust(d7, method = "average")
+plot(J, hang = -1, lwd = 2, col = "blue", main = "Dendrograma de conglomerados", sub = "objetos", xlab = "n",ylab = c("distancia"))
+```
+
+**B.** Interprete los resultados de su análisis.
+
+```{r}
+fviz_nbclust(M7, FUNcluster = kmeans, method = "wss", k.max = 5)
+```
+
+Al ver la grafica de clusters optimos realizado por el dondograma de conglomerados podemos decir que el numero optimo de clusters para nuestos datos es 4.

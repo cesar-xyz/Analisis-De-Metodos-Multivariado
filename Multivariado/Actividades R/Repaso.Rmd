@@ -1,0 +1,179 @@
+---
+title: "Practicar"
+author: "Cesar Vazquez"
+date: "2022-12-01"
+output: html_document
+---
+
+## Problema 1
+
+De la matriz siguiente:
+
+```{r}
+M = matrix(c(4.4, 0.8, 0.8, 5.6),ncol = 2)
+M
+```
+
+hallar su descomposición espectral:
+
+```{r}
+ev <- eigen(M)
+# extract components
+(L <- ev$values)
+(V <- ev$vectors)
+A1 = L[1] * V[,1] %*% t(V[,1]);A1
+A2 = L[2] * V[,2] %*% t(V[,2]);A2
+A1 + A2
+```
+
+## Problema 2
+
+Si X se distribuye normalmente con una media $\mu$ = (2,5 , 4)' y una covarianza de:
+
+```{r}
+library(mnormt)
+cov = matrix(c(1.2,0,0,2.3),ncol = 2) #sigma
+```
+
+Hallar la probabilidad de que $P(X≤x)$ donde x = (2,3)' Sugerencia. Utilice la librería de R: mnormt. Debe llegar al valor 0.0825.
+
+```{r}
+x = c(2,3)
+miu = c(2.5,4)
+pmnorm(x,miu,cov)
+```
+
+## Problema 3
+
+Con los datos del csv del vector de variables aleatorio X = (X~1~, X~2~, X~3~) calcular las distancias de Mahalanobis y hallar las proporciones de datos por debajo de los percentiles de Chi-cuadrada corespondientes a 10, 20, 30, 40, 50, 60, 70, 80 y 90. Hacer una gráfica de Chi-2(1-alfa, gl = 3) vs la proporción hallada. ¿Se podría decir que X se distribuye normalmente?
+
+```{r}
+P = read.csv("datosX1X2X3.csv")
+```
+
+```{r}
+vMedia = colMeans(P)
+S = cov(P)
+Dm = mahalanobis(P, vMedia, S)
+gl = ncol(M)
+A = c()
+B = c()
+# qchisq me das una area a la izquierda y te doy la x
+for(i in c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)){
+  prop = sum(Dm < qchisq(i,gl))/length(Dm)
+  A = c(A, c(qchisq(i/100,gl)))
+  B = c(B, c(prop))
+  cat("Observado:", prop ,"Esperado: ", i, "%\n")
+}
+
+plot(A, B)
+
+```
+
+```{r}
+library(MVN)
+mvn(data = P, mvnTest = "mardia")
+```
+
+```{r}
+test = mvn(data = P, multivariatePlot = "qq")
+```
+
+## Problema 4
+
+A los datos numéricos del problema 3 plantee las hipótesis de la Prueba de normalidad.
+
+¿Cuál es el valor p de correspondientes a los Test de sesgo y curtosis de la Prueba de normalidad multivariada de Mardia?
+
+Sesgo: **0.6599**
+
+Curtosis: **0.2404**
+
+```{r}
+mvn(data = P, mvnTest = "hz")
+```
+
+¿Cual es el valor p de la prueba de normalidad multivaridad de Henze-Zirkler's?
+
+Henze-Zirkler: **0.503**2
+
+A un alfa = 0.05, ¿qué se concluye?
+
+$H_0$ : Los datos provienen de una población normal
+
+$H_1$ : Los datos provienen de una población no normal
+
+Donde se acepta $H_0$ si p valor \> alpha
+
+## Problema 5
+
+El Departamento de Industria Primaria Pesca de Tasmania (Australia) hace un estudio sobre algunas características básicas del pez Olmo.
+
+Se anexan los datos (olmos.csv)
+
+Realice un análisis de normalidad de las variables continuas para identificar variables normales::
+
+A. Realice la prueba de normalidad de Mardia y la prueba de Anderson Darling con las variables X1, X2 y X3 y de la conclusión a un nivel se significación de 0.05. 
+
+\
+Interprete coeficientes de sesgo y curtosis de Mardia resultantes. Indique qué variables resultaron leptocúrticas, platicúrticas y mesocúrticas. 
+
+B. Elabore la gráfica de contorno de la normal multivariada obtenida  anteriormente. 
+
+C. Con el vector de medias y la matriz de covarianza de la normal multivariada en en el inciso A, calcule la probabilidad de que P(X
+
+(0.25, 0.25, 0.25) )
+
+D. Con el total de datos Olmos.csv calcula la distancia de Mahalanobis de cada observación al centroide (vector de medias) con respecto a la matriz de covarianzas. ¿Qué observación está más alejada, según la distancia de Mahalanobis, del centroide?  ¿Qué observación está más cercana? 
+
+E. Aplicar al total de datos un análisis de componentes principales y con base en al menos tres criterios (por ejemplo, porcentaje de variación acumulada, gráfica de Scree y los valores de las cargas ) determinar cuántos componentes son suficientes para explicar razonablemente la mayoría de la variación. 
+
+F. Escribir las combinaciones lineales  de los Componentes principales en función de las variables y cargas obtenidas de los componentes principales resultantes.
+
+F. Utilizando los dos primeros componentes hacer una gráfica de dispersión  de las puntuaciones. Comentar el gráfico en función de la variabilidad.
+
+G. Hacer un gráfico vectorial de las variables e interpretar sus relaciones. 
+
+## Problema 6
+
+Con los mismos datos y contexto del problema anterior, realice un análisis factorial: 
+
+**A.** Justifique por qué es adecuado el uso del Análisis factorial (hacer la prueba de esfericidad de Bartlett y KMO).
+
+**B.** Justifique el número de factores principales que se utilizarán en el modelo. 
+
+**C.** Identifique las comunalidades de los factores del modelo propuesto, y los errores: interprete si se necesita un nuevo factor.
+
+D. Encuentre con ayuda de un gráfico de variables qué conviene más sin rotación o con rotación varimax. (se puede ayudar con la función fa de la librería psych y el gráfico de la función fa.diagram)
+
+## Problema 7
+
+a)  Distancias por carretera (en km) entre ciudades.
+
+|      |     |     |     |     |
+|------|-----|-----|-----|-----|
+| 0    |     |     |     |     |
+| 639  | 0   |     |     |     |
+| 606  | 474 | 0   |     |     |
+| 1181 | 542 | 908 | 0   |     |
+| 364  | 350 | 597 | 679 | 0   |
+
+Hallar las ultra-distancias (dendrogram-dist) con el método de aglomeración jerárquica: (1) distancia mínima para nuevo grupo (2) distancia promedio entre individuos. Construir el dendrograma respectivo. 
+
+```{r}
+library(ggplot2)
+library(factoextra)
+Mpre = matrix(c(0,639,606,1181,364,0,0,474,542,350,0,0,0,908,597,0,0,0,0,679,0,0,0,0,0), ncol = 5)
+Mpre
+```
+
+```{r}
+M = Mpre + t(Mpre)
+M
+d = as.dist(M) 
+J = hclust(d, method = "average")
+plot(J, hang = -1, lwd = 2, col = "blue", main = "Dendrograma de conglomerados", sub = "objetos", xlab = "n",ylab = c("distancia"))
+fviz_nbclust(M, FUNcluster = kmeans, method = "wss", k.max = 2)
+```
+
+b)  Hacer el gráfico de agromeración no-jerárquica con el método de k-medias para k = 2 y para k = 3 con los datos del problema 5. Argumente porqué sería mejor usar k = 2 o k = 3, según sea su elección. 

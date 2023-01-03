@@ -1,0 +1,117 @@
+---
+title: "Actividad2.4"
+author: "Cesar Vazquez"
+date: "2022-12-01"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r}
+library(MASS)
+library(ggplot2)
+library(klaR)
+```
+
+```{r}
+M <- read.csv("BD_Character.csv")
+head(M)
+```
+
+## 0.- Designa a la variable "Grupo" como variable dependiente y acota tu base de datos.
+
+```{r}
+M$grupo <- factor(M$grupo, levels = c(1,0), labels = c("Si", "No"))
+head(M)
+```
+
+##1.- Determina los siguientes puntos de toda la base de datos (variables cuantitativas):
+
+**a)** La matriz de varianzas y covarianzas
+
+```{r}
+mcov <- cov(M[, -c(7)]) 
+mcov
+```
+
+**b)** La matriz de correlación
+
+```{r}
+mCor <- cor(M[, -c(7)]) 
+mCor
+```
+
+## 2.- Realiza un análisis discriminante para responder las siguientes preguntas:
+
+**a)** Obtenga la media para cada variable predictora en función del grupo (puede utilizar la función tapply)
+
+```{r}
+tapply(M$edad, M$grupo, mean)
+tapply(M$semanas, M$grupo, mean) 
+tapply(M$peso, M$grupo, mean) 
+tapply(M$talla, M$grupo, mean) 
+tapply(M$glucosa, M$grupo, mean) 
+tapply(M$presion, M$grupo, mean) 
+```
+
+**b)** Utilice algún criterio para la selección de variables a utilizar en el modelo
+
+Criterio de lambda de Wilks para selección de variables
+
+```{r}
+greedy.wilks(grupo ~., M)
+```
+
+**c)** Muestre la distribución de datos en función de la variable dependiente (utilice la función prop.table(table())
+
+```{r}
+prop.table(table(M$grupo))
+```
+
+**d)** Calcule la(s) funcion(es) lineal(es) discriminante(s) para un análisis discriminante.
+
+```{r}
+model <- lda(grupo ~ glucosa , data = M)
+model
+```
+
+**e)** Estime los valores de la función discriminante utilizando los coeficientes del modelo en las variables seleccionadas.
+
+```{r}
+model$scaling
+```
+
+Debido a que el modelo solo utiliza la glucosa como variable predictora, el coeficiente de la función discriminante es 0.8566565.
+
+**f)** Realice predicciones del modelo
+
+```{r}
+predictions <- predict(model, M)
+predictions
+```
+
+**g) ¿Se logró segmentar?**
+
+```{r}
+c1 = (sum(tapply(model$scaling[1]*M$glucosa, M$grupo, mean))) /2
+c1 
+```
+
+```{r}
+ggplot(M) + 
+  aes(x  = glucosa, fill = grupo) +
+  geom_histogram(alpha = 0.25, position = "identity") +
+  theme_bw() +
+  geom_vline(xintercept = c1, linetype = "longdash")
+
+```
+
+A partir de la visualización de la gráfica utilizando el criterio de separación $C_1$ los datos no se observan segmentados ya que los grupos están traslapados entre sí, lo cual nos dice que clasificación no se logro segmentar.
+
+**h)** ¿Qué variable o variables discriminan mejor?
+
+A partir del criterio de wills, la variable que discrimina mejor es la de la glucosa.
+
+**i)** ¿El modelo es bueno para pronosticar?
+
+Al no poder realizar una clasificación se concluye que el modelo no es bueno para la realización de pronosticos.
